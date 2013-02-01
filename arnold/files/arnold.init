@@ -1,0 +1,73 @@
+#!/bin/bash
+#
+# sshd		Start up the Arnold Provisionator server daemon
+#
+# chkconfig: 2345 55 25
+# description: Arnold is a web service that allows for self service provisioning. Razor support forthcoming.
+#
+# This is a pretty cruddy init script.
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+# grab the puppet ruby if system ruby doesn't exist.
+PATH=$PATH:/opt/puppet/bin
+
+PID=`ps ax | grep "ruby.*arnold$" | awk '{print $1}'`
+
+success()
+{
+  if [ $RETVAL -eq 0 ]; then echo "OK"; else echo "FAIL"; fi
+}
+
+start()
+{
+	echo -n $"Starting arnold: "
+	/usr/local/bin/arnold
+	RETVAL=$?
+	success
+}
+
+stop()
+{
+	echo -n $"Stopping arnold: "
+	kill ${PID}
+	RETVAL=$?
+	success
+}
+
+status()
+{
+  if [ "${PID}" != "" ]
+  then
+    echo $"Arnold is running."
+    RETVAL=0
+  else
+    echo $"Arnold is stopped."
+    RETVAL=1
+  fi
+}
+
+restart() {
+	stop
+	start
+}
+
+case "$1" in
+	start)
+		start
+		;;
+	stop)
+		stop
+		;;
+	restart)
+		restart
+		;;
+	status)
+		status
+		;;
+	*)
+		echo $"Usage: $0 {start|stop|restart|status}"
+		RETVAL=2
+esac
+exit $RETVAL

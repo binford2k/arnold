@@ -1,0 +1,19 @@
+<form action="/create" method="post">
+  <label for="nodename">Name:</label>
+  <input type="text" size=60 id"nodename" name="nodename" />
+  <table class="classes">
+    <tr class="header"><th colspan="3">Classes</th></tr>
+    <% even = true %>
+    <% if @classes %>
+      <% @classes.each do |classname, desc| %>
+        <tr class="<%= even ? "even":"odd" %>">
+          <td class="class"><%= classname %></td>
+          <td class="class"><%= desc %></td>
+          <td class="selected"><input name="classes[]" value="<%= classname %>" type="checkbox"></td>
+        </tr>
+        <% even = !even %>
+      <% end %>
+    <% end %>
+  </table>
+  <input type="submit" value="Create Node" />
+</form>

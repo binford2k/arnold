@@ -1,0 +1,14 @@
+<% if @nodes %>
+  <table>
+    <tr class="header"><th>Node Name</th></tr>
+    <% even = true %>
+    <% @nodes.each do |name| %>
+      <tr class="<%= even ? "even":"odd" %>">
+        <td class="node">
+          <a href="/node/<%= name %>"><%= name %></a>
+        </td>
+      </tr>
+      <% even = !even %>
+    <% end %>
+  </table>
+<% end %>
