@@ -64,17 +64,19 @@ class Server  < Sinatra::Application
 
     post '/create' do
       protected!
-      nodename = params[:nodename]
-      classes  = params[:classes]
-      create_node(nodename, classes)
+      nodename   = params[:nodename]
+      parameters = parse_params(params)
+      classes    = params[:classes]
+      create_node(nodename, parameters, classes)
       redirect '/'
     end
 
     post '/update' do
       protected!
-      nodename = params[:nodename]
-      classes  = params[:classes]
-      update_node(nodename, classes)
+      nodename   = params[:nodename]
+      parameters = parse_params(params)
+      classes    = params[:classes]
+      update_node(nodename, parameters, classes)
       redirect '/'
     end
 
@@ -107,25 +109,42 @@ class Server  < Sinatra::Application
       end
 
       # Wrapper function to check for 
-      def create_node(nodename, classes)
+      def create_node(nodename, parameters, classes)
         raise "Node Exists: press back and try again" if File.exists? "#{CONFIG['datadir']}/#{nodename}.yaml"
-        write(nodename, classes)
+        write(nodename, parameters, classes)
       end
 
-      def update_node(nodename, classes)
+      def update_node(nodename, parameters, classes)
         raise "Invalid Node" unless File.exists? "#{CONFIG['datadir']}/#{nodename}.yaml"
-        write(nodename, classes)
+        write(nodename, parameters, classes)
       end
 
       # Creates a node YAML file in the datadir
       #
-      def write(nodename, classes)
-        data = { 'classes' => classes }
+      def write(nodename, parameters, classes)
+        data = {
+          'name'       => nodename,
+          'parameters' => parameters,
+          'classes'    => classes,
+        }
+        
+        puts data.to_yaml
+        
         File.open("#{CONFIG['datadir']}/#{nodename}.yaml", 'w') do |file|
-          file.write("# This file is managed by Arnold: the provisionator.\n")
-          file.write("# Any manual modifications will be gleefully overwritten.\n")
+          file.write("### This file is managed by Arnold: the provisionator.  ###\n")
+          file.write("# Any manual modifications will be gleefully overwritten. #\n")
+          file.write("###########################################################\n")
           file.write(data.to_yaml)
         end
+      end
+
+      # Scrapes paramters from the post params object
+      #      
+      def parse_params(params)
+        parsed = {}
+         # Pull out params, but only those which are valid variable names in Puppet
+        params.each {|k,v| parsed[k.sub('param_', '')] = v if k =~ /^param_[a-zA-Z0-9_]+$/ }
+        parsed
       end
 
       # Basic auth boilerplate

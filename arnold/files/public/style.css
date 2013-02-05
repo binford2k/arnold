@@ -1,37 +1,33 @@
 table {
-  max-width: 800px;
+  width: 850px;
   border: 1px solid #ccc;
   background: #efefef;
   border-spacing: 0;
   -moz-border-radius: 5px;
   border-radius: 5px;
+  margin: 1em 0;
 }
 th {
   border-bottom: 2px solid #999;
+  text-align: left;
 }
 tr.even {
   background: #b3c6ae;
 }
+tr.unsaved {
+  background: #efd540;
+}
 td {
   border-left: 1px solid #ddd;
 }
-td.status {
-  text-align: center;
+td.param,
+td.classname {
+  width: 120px;
 }
-td.action {
-  border-left: none;
-}
-td.action input:hover {
-  color: blue;
-}
-td.action input.destructive:hover {
-  background: red;
-}
-td.label {
-  font-weight: bold;
-  font-size: 0.8em;
-  text-align: right;
-}
-td.dns_alt_names {
+input#newparam {
+  float: right;
   font-size: small;
+}
+input.value {
+  width: 720px;
 }

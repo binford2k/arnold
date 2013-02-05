@@ -2,14 +2,27 @@
   <form action="/update" method="post">
     <h2><%= @node['name'] %></h2>
     <input type="hidden" id"nodename" name="nodename" value="<%= @node['name'] %>" />
+    <table class="parameters">
+      <tr class="header"><th colspan="2">Parameters <input type="button" id="newparam" value="Add Parameter" /></th></tr>
+      <% even = true %>
+      <% if @node.has_key?('parameters') %>
+        <% @node['parameters'].each do |param, value| %>
+          <tr class="<%= even ? "even":"odd" %>">
+            <td class="param"><label for="param_<%= param %>"><%= param %></label></td>
+            <td class="value"><input type="text" class="value" size="100" name="param_<%= param %>" value="<%= value %>"></td>
+          </tr>
+          <% even = !even %>
+        <% end %>
+      <% end %>
+    </table>
     <table class="classes">
       <tr class="header"><th colspan="3">Classes</th></tr>
       <% even = true %>
       <% if @classes %>
         <% @classes.each do |classname, desc| %>
           <tr class="<%= even ? "even":"odd" %>">
-            <td class="class"><%= classname %></td>
-            <td class="class"><%= desc %></td>
+            <td class="classname"><%= classname %></td>
+            <td class="description"><%= desc %></td>
             <td class="selected"><input type="checkbox" name="classes[]" value="<%= classname %>" checked></td>
           </tr>
           <% even = !even %>

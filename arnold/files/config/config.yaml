@@ -1,7 +1,7 @@
 ---
 sslcert:   /etc/arnold/certs/server.crt
 sslkey:    /etc/arnold/certs/server.key
-datadir:   /etc/puppetlabs/puppet/hieradata/arnold
+datadir:   /etc/arnold/data
 
 user:      admin
 password:  admin
