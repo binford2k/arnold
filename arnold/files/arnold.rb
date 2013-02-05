@@ -143,7 +143,7 @@ class Server  < Sinatra::Application
       def parse_params(params)
         parsed = {}
          # Pull out params, but only those which are valid variable names in Puppet
-        params.each {|k,v| parsed[k.sub('param_', '')] = v if k =~ /^param_[a-zA-Z0-9_]+$/ }
+        params.each {|k,v| parsed[k.sub('param_', '')] = v if k =~ /^param_[a-zA-Z0-9_]+$/ and v != '' }
         parsed
       end
 
