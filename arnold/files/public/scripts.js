@@ -10,9 +10,12 @@ $(document).ready(function(){
 function addParam(table) {
   param = prompt('Enter the name of the new parameter','ParamName');
   if (param != null && param != "") {
-    label='<label for="param_' + param +'">' + param + '</label>'
-    input='<input type="text" class="value" size="100" name="param_' + param + '" value="">'
-    table.append('<tr class="unsaved"><td>' + label + '</td><td>' + input + '</td></tr>');
+    if ($('input#param_' + param).length == 0) {
+      label='<label for="param_' + param +'">' + param + '</label>'
+      input='<input type="text" class="value" size="100" name="param_' + param + '" id="param_' + param + '" value="">'
+      table.append('<tr class="unsaved"><td>' + label + '</td><td>' + input + '</td></tr>');
+      $('input#param_' + param).focus();
+    }
   }
 }
 

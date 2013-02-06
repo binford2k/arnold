@@ -31,3 +31,6 @@ input#newparam {
 input.value {
   width: 720px;
 }
+div.meta label {
+  display: block;
+}

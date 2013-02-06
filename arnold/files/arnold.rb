@@ -5,7 +5,9 @@ require 'sinatra/base'
 require 'webrick'
 require 'webrick/https'
 require 'openssl'
+require 'fileutils'
 require 'yaml'
+require 'json'
 
 CONFIG  = YAML.load_file('/etc/arnold/config.yaml')
 DOCROOT = CONFIG['docroot'] || File.dirname(__FILE__)
@@ -22,7 +24,7 @@ opts = {
         :SSLCertName        => [ [ "CN",WEBrick::Utils::getservername ] ]
 }
 
-class Server  < Sinatra::Application
+class Server < Sinatra::Application
 
     set     :root, DOCROOT
 #    set     :dump_errors, false
@@ -36,10 +38,10 @@ class Server  < Sinatra::Application
       erb :nodes
     end
 
-    get '/node/:nodename' do |nodename|
+    get '/node/:guid' do |guid|
       protected!
       begin
-        @node = load_node(nodename)
+        @node = load_node(guid)
 
         # We could just pass through the list of classes, but this lets us restrict classes
         # to only those specifically supported in our config. It also lets us display the
@@ -49,7 +51,7 @@ class Server  < Sinatra::Application
       rescue NoMethodError => e
         # if the node doesn't exist, or if it doesn't have any classes defined, then ensure
         # that we have a node defined, and prepare a full list of classes available.
-        @node ||= { 'name' => nodename }
+        @node ||= { 'guid' => guid }
         @disabled = CONFIG['classes']
       end
 
@@ -65,19 +67,46 @@ class Server  < Sinatra::Application
     post '/create' do
       protected!
       nodename   = params[:nodename]
+      macaddr    = params[:macaddr].upcase if not nada(params[:macaddr])
       parameters = parse_params(params)
       classes    = params[:classes]
-      create_node(nodename, parameters, classes)
+      create_node(nodename, macaddr, parameters, classes)
       redirect '/'
     end
 
     post '/update' do
       protected!
+      guid       = params['guid']
       nodename   = params[:nodename]
+      macaddr    = params[:macaddr].upcase if not nada(params[:macaddr])
       parameters = parse_params(params)
       classes    = params[:classes]
-      update_node(nodename, parameters, classes)
+      update_node(guid, nodename, macaddr, parameters, classes)
       redirect '/'
+    end
+
+    post '/api/v1/create' do
+      protected!
+      request.body.rewind  # in case someone already read it
+      data = JSON.parse request.body.read
+
+      nodename   = data['nodename']
+      macaddr    = data['macaddr'].upcase if not nada(data['macaddr'])
+      parameters = data['parameters']
+      classes    = data['classes']
+
+      create_node(nodename, macaddr, parameters, classes)
+    end
+    
+    get '/api/v1/:guid' do |guid|
+      protected!
+      begin
+        node = load_node(guid)
+      rescue NoMethodError => e
+        node ||= { 'guid' => guid }
+      end
+
+      node.to_json
     end
 
     not_found do
@@ -92,59 +121,109 @@ class Server  < Sinatra::Application
 
     helpers do
 
-      # Returns an array of node names
-      #
-      # Just list the files in the datadir
+      # Returns an array of nodes
       #
       def load_nodes()
-        Dir.glob("#{CONFIG['datadir']}/*.yaml").collect { |f| File.basename(f, '.yaml') }
+        nodes={}
+        Dir.glob("#{CONFIG['datadir']}/*.yaml").each do |file|
+          data = YAML.load_file(file)
+          guid = File.basename(file, '.yaml')
+          nodes[guid] = {
+            'name'    => data['name'],
+            'macaddr' => data['macaddr'],
+          }
+        end
+        nodes
       end
 
       # Returns a hash of settings for a given node
       #
       # Enabled classes will be found under the 'classes' key.
       #
-      def load_node(node)
-        YAML.load_file("#{CONFIG['datadir']}/#{node}.yaml").merge!( { 'name' => node} )
+      def load_node(guid)
+        YAML.load_file("#{CONFIG['datadir']}/#{guid}.yaml").merge!( 'guid' => guid )
       end
 
-      # Wrapper function to check for 
-      def create_node(nodename, parameters, classes)
-        raise "Node Exists: press back and try again" if File.exists? "#{CONFIG['datadir']}/#{nodename}.yaml"
-        write(nodename, parameters, classes)
+      # Wrapper function to check for
+      def create_node(nodename, macaddr, parameters, classes)
+        raise "Must have a node name or mac address!" if nada(nodename) and nada(macaddr)
+        raise "Node name exists: press back and try again" if File.exists? "#{CONFIG['datadir']}/name/#{nodename}.yaml"
+        raise "MAC address exists: press back and try again" if File.exists? "#{CONFIG['datadir']}/macaddr/#{macaddr}.yaml"
+
+        guid = nil
+        5.times do
+          guid = (0..16).to_a.map{|a| rand(16).to_s(16)}.join
+          break if not File.exist? "#{CONFIG['datadir']}/#{guid}.yaml"
+        end
+        raise "GUID generation failed!" if File.exist? "#{CONFIG['datadir']}/#{guid}.yaml"
+
+        write(guid, nodename, macaddr, parameters, classes)
+
+        return guid
       end
 
-      def update_node(nodename, parameters, classes)
-        raise "Invalid Node" unless File.exists? "#{CONFIG['datadir']}/#{nodename}.yaml"
-        write(nodename, parameters, classes)
+      def update_node(guid, nodename, macaddr, parameters, classes)
+        raise "Invalid Node" unless File.exists? "#{CONFIG['datadir']}/#{guid}.yaml"
+        write(guid, nodename, macaddr, parameters, classes)
       end
 
       # Creates a node YAML file in the datadir
       #
-      def write(nodename, parameters, classes)
-        data = {
-          'name'       => nodename,
-          'parameters' => parameters,
-          'classes'    => classes,
-        }
-        
-        puts data.to_yaml
-        
-        File.open("#{CONFIG['datadir']}/#{nodename}.yaml", 'w') do |file|
+      def write(guid, nodename, macaddr, parameters, classes)
+        ['guid', 'name', 'macaddr', 'classes'].each { |n| raise "Invalid parameter: #{n}" if parameters.has_key?(n) }
+        classes = [] if not classes.kind_of?(Array)
+        raise "Invalid MAC Address: #{macaddr}" if not (macaddr.nil? || macaddr =~ /^(([0-9A-F]{2}[:-]){5}([0-9A-F]{2}))?$/)
+
+        data = { 'classes' => classes }
+        data['name']    = nodename if not nada(nodename)
+        data['macaddr'] = macaddr  if not nada(macaddr)
+        data.merge! parameters
+
+        File.open("#{CONFIG['datadir']}/#{guid}.yaml", 'w') do |file|
           file.write("### This file is managed by Arnold: the provisionator.  ###\n")
           file.write("# Any manual modifications will be gleefully overwritten. #\n")
           file.write("###########################################################\n")
           file.write(data.to_yaml)
         end
+
+        make_link(guid, macaddr, 'macaddr')
+        make_link(guid, nodename, 'name')
+        remove_stale_symlinks("#{CONFIG['datadir']}/macaddr/")
       end
 
       # Scrapes paramters from the post params object
-      #      
+      #
       def parse_params(params)
         parsed = {}
          # Pull out params, but only those which are valid variable names in Puppet
         params.each {|k,v| parsed[k.sub('param_', '')] = v if k =~ /^param_[a-zA-Z0-9_]+$/ and v != '' }
         parsed
+      end
+
+      def make_link(guid, file, type)
+        raise "Invalid type" if not ['name','macaddr'].include? type
+
+        begin
+          if not (file.nil? || file.empty?)
+            File.symlink("#{CONFIG['datadir']}/#{guid}.yaml", "#{CONFIG['datadir']}/#{type}/#{file}.yaml")
+          else
+            File.unlink("#{CONFIG['datadir']}/#{type}/#{file}.yaml")
+          end
+        rescue Errno::EEXIST
+          # noop
+        rescue Errno::ENOENT
+          # noop
+        end
+      end
+
+      # just loop through a directory and get rid of any stale symlinks
+      def remove_stale_symlinks(path)
+        Dir.glob("#{path}/*").each { |f| File.unlink(f) if not File.exist?(f) }
+      end
+
+      # a helper to indicate a dead var
+      def nada(value)
+        (value.nil? || value.empty?)
       end
 
       # Basic auth boilerplate
@@ -163,6 +242,15 @@ class Server  < Sinatra::Application
     end
 end
 
+# make sure out data directories exist
+if not File.exist? "#{CONFIG['datadir']}/macaddr/"
+  FileUtils.mkdir_p "#{CONFIG['datadir']}/macaddr/"
+end
+if not File.exist? "#{CONFIG['datadir']}/name/"
+  FileUtils.mkdir_p "#{CONFIG['datadir']}/name/"
+end
+
+# now it's off to the races!
 Rack::Handler::WEBrick.run(Server, opts) do |server|
   [:INT, :TERM].each { |sig| trap(sig) { server.stop } }
 end

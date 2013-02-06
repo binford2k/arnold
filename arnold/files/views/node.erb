@@ -1,12 +1,15 @@
 <% if @node %>
   <form action="/update" method="post">
-    <h2><%= @node['name'] %></h2>
-    <input type="hidden" id"nodename" name="nodename" value="<%= @node['name'] %>" />
+    <% if @node.has_key?('name') then %><h2><%= @node['name'] %></h2><% end %>
+    <% if @node.has_key?('macaddr') then %><h3><%= @node['macaddr'] %></h3><% end %>
+    <input type="hidden" id="guid" name="guid" value="<%= @node['guid'] %>" />
+    <input type="hidden" id="nodename" name="nodename" value="<%= @node['name'] %>" />
+    <input type="hidden" id="macaddr" name="macaddr" value="<%= @node['macaddr'] %>" />
     <table class="parameters">
       <tr class="header"><th colspan="2">Parameters <input type="button" id="newparam" value="Add Parameter" /></th></tr>
       <% even = true %>
-      <% if @node.has_key?('parameters') %>
-        <% @node['parameters'].each do |param, value| %>
+      <% @node.each do |param, value| %>
+        <% if not ['guid', 'name', 'macaddr', 'classes'].include? param %>
           <tr class="<%= even ? "even":"odd" %>">
             <td class="param"><label for="param_<%= param %>"><%= param %></label></td>
             <td class="value"><input type="text" class="value" size="100" name="param_<%= param %>" value="<%= value %>"></td>

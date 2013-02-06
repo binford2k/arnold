@@ -1,6 +1,10 @@
 <form action="/create" method="post">
-  <label for="nodename">Name:</label>
-  <input type="text" size=60 id"nodename" name="nodename" />
+  <div class="meta">
+    <label for="nodename">Name:</label>
+    <input type="text" size=60 id"nodename" name="nodename" />
+    <label for="macaddr">MAC Address:</label>
+    <input type="text" size=60 id"macaddr" name="macaddr" />
+  </div>
   <table class="parameters">
     <tr class="header"><th colspan="2">Parameters <input type="button" id="newparam" value="Add Parameter" /></th></tr>
   </table>
