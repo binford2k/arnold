@@ -172,7 +172,8 @@ class Server < Sinatra::Application
       def write(guid, nodename, macaddr, parameters, classes)
         ['guid', 'name', 'macaddr', 'classes'].each { |n| raise "Invalid parameter: #{n}" if parameters.has_key?(n) }
         classes = [] if not classes.kind_of?(Array)
-        raise "Invalid MAC Address: #{macaddr}" if not (macaddr.nil? || macaddr =~ /^(([0-9A-F]{2}[:-]){5}([0-9A-F]{2}))?$/)
+        raise "Invalid MAC address: #{macaddr}" if not (macaddr.nil? || macaddr =~ /^(([0-9A-F]{2}[:-]){5}([0-9A-F]{2}))?$/)
+        raise "Invalid node name: #{nodename}" if not (nodename.nil? || nodename =~ /^([^\/])*$/)
 
         data = { 'classes' => classes }
         data['name']    = nodename if not nada(nodename)
