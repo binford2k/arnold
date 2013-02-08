@@ -38,9 +38,9 @@ optparse.parse!
 # Load default configuration data, deferring to command line overrides
 SETTINGS[:configfile] ||= '/etc/arnold/config.yaml'
 SETTINGS[:config]       = YAML.load_file(SETTINGS[:configfile])
-SETTINGS[:debug]      ||= SETTINGS[:config]['daemonize']
+SETTINGS[:debug]      ||= ! SETTINGS[:config]['daemonize']
 
-CONFIG = SETTINGS[:config]
+CONFIG  = SETTINGS[:config]
 DOCROOT = CONFIG['docroot'] || File.dirname(__FILE__)
 DATADIR = "#{CONFIG['datadir']}/arnold"
 
