@@ -5,22 +5,29 @@ require 'rubygems'
 require 'json'
 require 'uri'
 
-user = 'admin'
-pass = 'admin'
+user   = 'admin'
+pass   = 'admin'
+server = 'localhost'
+
+def provision()
+  # Call VMware APIs to create a new machine, configure, and boot it.
+  # Return its MAC address.
+  return '00:0C:29:D1:03:A2'
+end
+
+macaddr = provision()
 
 payload = {
-  'macaddr'    => '00:0C:29:E1:78:A1',
+  'macaddr'    => macaddr,
+  'nodename'   => 'this.is.a.brand.new.system',
   'parameters' => {
                     'booga'   => 'wooga',
                     'fiddle'  => 'faddle',
                   },
-  'classes'    => [ 
-                    'apache',
-                    'ntp::client',
-                  ],
+  'classes'    => [ 'test', 'ntp' ],
 }.to_json
  
-uri = URI.parse("https://localhost:9090/api/v1/create")
+uri = URI.parse("https://#{server}:9090/api/v1/create")
 http = Net::HTTP.new(uri.host, uri.port)
 http.use_ssl = true
 http.verify_mode = OpenSSL::SSL::VERIFY_NONE
