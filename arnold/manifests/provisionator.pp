@@ -2,7 +2,8 @@ class arnold::provisionator {
   File {
     owner  => root,
     group  => root,
-    mode   => '0644'
+    mode   => '0644',
+    notify => Service['arnold'],
   }
   file { '/usr/local/share/arnold':
     ensure => directory,
@@ -42,11 +43,11 @@ class arnold::provisionator {
     ensure => file,
     source => 'puppet:///modules/arnold/arnold.init',
     mode   => '0755',
+    notify => undef,
   }
   
   service { 'arnold':
     ensure => running,
     enable => true,
-    require => File['/etc/init.d/arnold'],
   }
 }

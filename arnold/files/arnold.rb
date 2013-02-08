@@ -97,7 +97,7 @@ class Server < Sinatra::Application
 
       create_node(nodename, macaddr, parameters, classes)
     end
-    
+
     get '/api/v1/:guid' do |guid|
       protected!
       begin
@@ -116,6 +116,10 @@ class Server < Sinatra::Application
     error do
       @error = env['sinatra.error'].message
       #p env['sinatra.error']
+
+      # just return the error if the api was called
+      return @error if request.path =~ /^\/api/
+
       erb :error
     end
 
@@ -177,14 +181,14 @@ class Server < Sinatra::Application
         validate(parameters, :params)
         validate(macaddr, :macaddr) unless macaddr.nil?
         validate(nodename, :filename) unless nodename.nil?
-        
+
         data = {
           'parameters' => parameters,
           'classes'    => classes,
         }
         data['name']    = nodename if not nada(nodename)
         data['macaddr'] = macaddr  if not nada(macaddr)
-        
+
         # duplicate the parameters hash. This allows hiera() calls to work as expected.
         # Principle of least surprise, ya know.
         data.merge! parameters
@@ -237,7 +241,7 @@ class Server < Sinatra::Application
       def nada(value)
         (value.nil? || value.empty?)
       end
-      
+
       # Perform any input munging needed
       #
       def munge(value, type=:upcase)
@@ -246,7 +250,7 @@ class Server < Sinatra::Application
           return nada(value) ? nil : value.upcase
         end
       end
-      
+
       # Raise exceptions if the given condition fails
       #
       def validate(value, type=:exists)
@@ -256,13 +260,13 @@ class Server < Sinatra::Application
 
         when :macaddr
           raise "Invalid MAC address: #{value}" if not value =~ /^(([0-9A-F]{2}[:-]){5}([0-9A-F]{2}))?$/
-        
+
         when :filename
           raise "Invalid name: #{value}" if not value =~ /^([^\/])*$/
-        
+
         when :exists
           raise "Value does not exist." if nada(value)
-          
+
         end
       end
 
