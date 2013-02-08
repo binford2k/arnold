@@ -1,3 +1,3 @@
 class arnold {
-  hiera_include('classes', undef, ['arnold/name/%{fqdn}','arnold/macaddr/%{macaddress}'])
+  hiera_include('classes', undef, ['arnold/nodename/%{fqdn}','arnold/macaddr/%{macaddress}'])
 }

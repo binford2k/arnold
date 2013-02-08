@@ -67,7 +67,7 @@ class Server < Sinatra::Application
     post '/create' do
       protected!
       nodename   = params[:nodename]
-      macaddr    = params[:macaddr].upcase if not nada(params[:macaddr])
+      macaddr    = munge(params[:macaddr], :upcase)
       parameters = parse_params(params)
       classes    = params[:classes]
       create_node(nodename, macaddr, parameters, classes)
@@ -78,7 +78,7 @@ class Server < Sinatra::Application
       protected!
       guid       = params['guid']
       nodename   = params[:nodename]
-      macaddr    = params[:macaddr].upcase if not nada(params[:macaddr])
+      macaddr    = munge(params[:macaddr], :upcase)
       parameters = parse_params(params)
       classes    = params[:classes]
       update_node(guid, nodename, macaddr, parameters, classes)
@@ -91,7 +91,7 @@ class Server < Sinatra::Application
       data = JSON.parse request.body.read
 
       nodename   = data['nodename']
-      macaddr    = data['macaddr'].upcase if not nada(data['macaddr'])
+      macaddr    = munge(data[:macaddr], :upcase)
       parameters = data['parameters']
       classes    = data['classes']
 
@@ -170,25 +170,35 @@ class Server < Sinatra::Application
       # Creates a node YAML file in the datadir
       #
       def write(guid, nodename, macaddr, parameters, classes)
-        ['guid', 'name', 'macaddr', 'classes'].each { |n| raise "Invalid parameter: #{n}" if parameters.has_key?(n) }
-        classes = [] if not classes.kind_of?(Array)
-        raise "Invalid MAC address: #{macaddr}" if not (macaddr.nil? || macaddr =~ /^(([0-9A-F]{2}[:-]){5}([0-9A-F]{2}))?$/)
-        raise "Invalid node name: #{nodename}" if not (nodename.nil? || nodename =~ /^([^\/])*$/)
+        # normalize and then validate our input
+        parameters = {} if not parameters.kind_of?(Hash)
+        classes    = [] if not classes.kind_of?(Array)
 
-        data = { 'classes' => classes }
+        validate(parameters, :params)
+        validate(macaddr, :macaddr) unless macaddr.nil?
+        validate(nodename, :filename) unless nodename.nil?
+        
+        data = {
+          'parameters' => parameters,
+          'classes'    => classes,
+        }
         data['name']    = nodename if not nada(nodename)
         data['macaddr'] = macaddr  if not nada(macaddr)
+        
+        # duplicate the parameters hash. This allows hiera() calls to work as expected.
+        # Principle of least surprise, ya know.
         data.merge! parameters
 
         File.open("#{CONFIG['datadir']}/#{guid}.yaml", 'w') do |file|
+          file.write("###########################################################\n")
           file.write("### This file is managed by Arnold: the provisionator.  ###\n")
           file.write("# Any manual modifications will be gleefully overwritten. #\n")
           file.write("###########################################################\n")
           file.write(data.to_yaml)
         end
 
-        make_link(guid, macaddr, 'macaddr')
-        make_link(guid, nodename, 'name')
+        make_link(guid, macaddr, :macaddr)
+        make_link(guid, nodename, :nodename)
         remove_stale_symlinks("#{CONFIG['datadir']}/macaddr/")
       end
 
@@ -202,7 +212,8 @@ class Server < Sinatra::Application
       end
 
       def make_link(guid, file, type)
-        raise "Invalid type" if not ['name','macaddr'].include? type
+        raise "Invalid type" if not [ :nodename, :macaddr].include? type
+        validate(guid, :filename)
 
         begin
           if not (file.nil? || file.empty?)
@@ -222,9 +233,37 @@ class Server < Sinatra::Application
         Dir.glob("#{path}/*").each { |f| File.unlink(f) if not File.exist?(f) }
       end
 
-      # a helper to indicate a dead var
+      # a helper to indicate an empty/nil var
       def nada(value)
         (value.nil? || value.empty?)
+      end
+      
+      # Perform any input munging needed
+      #
+      def munge(value, type=:upcase)
+        case type
+        when :upcase
+          return nada(value) ? nil : value.upcase
+        end
+      end
+      
+      # Raise exceptions if the given condition fails
+      #
+      def validate(value, type=:exists)
+        case type
+        when :params
+          ['guid', 'name', 'macaddr', 'classes'].each { |n| raise "Invalid parameter: #{n}" if value.has_key?(n) }
+
+        when :macaddr
+          raise "Invalid MAC address: #{value}" if not value =~ /^(([0-9A-F]{2}[:-]){5}([0-9A-F]{2}))?$/
+        
+        when :filename
+          raise "Invalid name: #{value}" if not value =~ /^([^\/])*$/
+        
+        when :exists
+          raise "Value does not exist." if nada(value)
+          
+        end
       end
 
       # Basic auth boilerplate
@@ -247,8 +286,8 @@ end
 if not File.exist? "#{CONFIG['datadir']}/macaddr/"
   FileUtils.mkdir_p "#{CONFIG['datadir']}/macaddr/"
 end
-if not File.exist? "#{CONFIG['datadir']}/name/"
-  FileUtils.mkdir_p "#{CONFIG['datadir']}/name/"
+if not File.exist? "#{CONFIG['datadir']}/nodename/"
+  FileUtils.mkdir_p "#{CONFIG['datadir']}/nodename/"
 end
 
 # now it's off to the races!
