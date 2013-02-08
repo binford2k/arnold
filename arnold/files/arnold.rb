@@ -91,7 +91,7 @@ class Server < Sinatra::Application
       data = JSON.parse request.body.read
 
       nodename   = data['nodename']
-      macaddr    = munge(data[:macaddr], :upcase)
+      macaddr    = munge(data['macaddr'], :upcase)
       parameters = data['parameters']
       classes    = data['classes']
 
