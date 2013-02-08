@@ -282,7 +282,7 @@ class Server < Sinatra::Application
     end
 end
 
-# make sure out data directories exist
+# make sure our data directories exist
 if not File.exist? "#{CONFIG['datadir']}/macaddr/"
   FileUtils.mkdir_p "#{CONFIG['datadir']}/macaddr/"
 end
