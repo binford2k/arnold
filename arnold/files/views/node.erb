@@ -1,17 +1,17 @@
 <% if @node %>
   <form action="/update" method="post">
-    <% if @node.has_key?('name') then %><h2><%= @node['name'] %></h2><% end %>
-    <% if @node.has_key?('macaddr') then %><h3><%= @node['macaddr'] %></h3><% end %>
-    <input type="hidden" id="guid" name="guid" value="<%= @node['guid'] %>" />
-    <input type="hidden" id="nodename" name="nodename" value="<%= @node['name'] %>" />
-    <input type="hidden" id="macaddr" name="macaddr" value="<%= @node['macaddr'] %>" />
+    <% if @node.name then %><h2><%= @node.name %></h2><% end %>
+    <% if @node.macaddr then %><h3><%= @node.macaddr %></h3><% end %>
+    <input type="hidden" id="guid" name="guid" value="<%= @node.guid %>" />
+    <input type="hidden" id="name" name="name" value="<%= @node.name %>" />
+    <input type="hidden" id="macaddr" name="macaddr" value="<%= @node.macaddr %>" />
     <table class="parameters">
       <tr class="header"><th colspan="2">Parameters <input type="button" id="newparam" value="Add Parameter" /></th></tr>
       <% even = true %>
-      <% @node['parameters'].each do |param, value| %>
+      <% @node.parameters.each do |param, value| %>
         <tr class="<%= even ? "even":"odd" %>">
           <td class="param"><label for="param_<%= param %>"><%= param %></label></td>
-          <td class="value"><input type="text" class="value" size="100" name="param_<%= param %>" value="<%= value %>"></td>
+          <td class="value"><input type="text" class="value" size="100" name="param_<%= param %>" id="param_<%= param %>" value="<%= value %>"></td>
         </tr>
         <% even = !even %>
       <% end %>
@@ -19,25 +19,21 @@
     <table class="classes">
       <tr class="header"><th colspan="3">Classes</th></tr>
       <% even = true %>
-      <% if @classes %>
-        <% @classes.each do |classname, desc| %>
-          <tr class="<%= even ? "even":"odd" %>">
-            <td class="classname"><%= classname %></td>
-            <td class="description"><%= desc %></td>
-            <td class="selected"><input type="checkbox" name="classes[]" value="<%= classname %>" checked></td>
-          </tr>
-          <% even = !even %>
-        <% end %>
+      <% @node.enabled.each do |classname, desc| %>
+        <tr class="<%= even ? "even":"odd" %>">
+          <td class="classname"><%= classname %></td>
+          <td class="description"><%= desc %></td>
+          <td class="selected"><input type="checkbox" name="classes[]" value="<%= classname %>" checked></td>
+        </tr>
+        <% even = !even %>
       <% end %>
-      <% if @disabled %>
-        <% @disabled.each do |classname, desc| %>
-          <tr class="<%= even ? "even":"odd" %>">
-            <td class="class"><%= classname %></td>
-            <td class="class"><%= desc %></td>
-            <td class="selected"><input type="checkbox" name="classes[]" value="<%= classname %>"></td>
-          </tr>
-          <% even = !even %>
-        <% end %>
+      <% @node.disabled.each do |classname, desc| %>
+        <tr class="<%= even ? "even":"odd" %>">
+          <td class="class"><%= classname %></td>
+          <td class="class"><%= desc %></td>
+          <td class="selected"><input type="checkbox" name="classes[]" value="<%= classname %>"></td>
+        </tr>
+        <% even = !even %>
       <% end %>
     </table>
     <input type="submit" value="Update Node" />

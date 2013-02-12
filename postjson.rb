@@ -12,19 +12,19 @@ server = 'localhost'
 def provision()
   # Call VMware APIs to create a new machine, configure, and boot it.
   # Return its MAC address.
-  return '00:0C:29:D1:03:A2'
+  return '00:0C:29:D1:03:A4'
 end
 
 macaddr = provision()
 
 payload = {
   'macaddr'    => macaddr,
-  'nodename'   => 'this.is.a.brand.new.system',
+  'name'       => 'this.is.another.brand.new.system',
   'parameters' => {
                     'booga'   => 'wooga',
                     'fiddle'  => 'faddle',
                   },
-  'classes'    => [ 'test', 'ntp' ],
+  'classes'    => [ 'test', 'mysql', 'ntp' ],
 }.to_json
  
 uri = URI.parse("https://#{server}:9090/api/v1/create")

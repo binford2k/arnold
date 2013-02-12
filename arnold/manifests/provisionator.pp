@@ -9,6 +9,12 @@ class arnold::provisionator {
     ensure => directory,
   }
   
+   file { '/usr/local/share/arnold/lib':
+    ensure  => directory,
+    source  => 'puppet:///modules/arnold/lib',
+    recurse => true,
+  }
+  
    file { '/usr/local/share/arnold/public':
     ensure  => directory,
     source  => 'puppet:///modules/arnold/public',

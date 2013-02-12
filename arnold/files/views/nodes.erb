@@ -2,11 +2,11 @@
   <table>
     <tr class="header"><th>UUID</th><th>Node Name</th><th>MAC Address</th></tr>
     <% even = true %>
-    <% @nodes.each do |guid, data| %>
+    <% @nodes.each do |node| %>
       <tr class="<%= even ? "even":"odd" %>">
-        <td class="node"><a href="/node/<%= guid %>"><%= guid %></a></td>
-        <td class="node"><a href="/node/<%= guid %>"><%= data['name'] %></a></td>
-        <td class="node"><a href="/node/<%= guid %>"><%= data['macaddr'] %></a></td>
+        <td class="guid"><a href="/node/<%= node.guid %>"><%= node.guid %></a></td>
+        <td class="name"><a href="/node/<%= node.guid %>"><%= node.name %></a></td>
+        <td class="macaddr"><a href="/node/<%= node.guid %>"><%= node.macaddr %></a></td>
       </tr>
       <% even = !even %>
     <% end %>

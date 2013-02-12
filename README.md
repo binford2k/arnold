@@ -6,7 +6,7 @@ Introduction
 This is the start of a Razor provisioning system.
 
 Currently, all it does is provide a web service that will read & write YAML files
-and a class that will call `hiera_include()` to read them and apply classes to a node.
+and a few functions to read them and apply classes to a node.
 
 Very soon, I plan to provide Razor functionality to spin up new instances after
 classifying them, and then it will be a simplistic self service provisioner.
@@ -29,14 +29,28 @@ Configuration
   3. Point a web browser at the configured port
       * Clicky clicky
       * List nodes, create nodes, modify nodes, etc
-* Setup the clients
-    * Classify new nodes with `arnold`
-        * You may want to put this in the `default` group or node.
- 
+  4. Enable arnold for clients:
+      * In `site.pp` on your master, outside of any node definitions, simply call the `arnold()` function.
+      * Alternately, you can classify your nodes with `arnold`
+        * If you place this class in your default group, it will automatically be applied to all nodes.
+
+Provisioner backend configuration
+=============
+
+Currently only the CloudProvisioner provisioning backend exits. You can enable it by
+adding a stanza like this to your `config.yaml`
+
+    backend:      CloudProvisioner
+    keyfile:      ~/.ssh/private_key.pem
+    enc_password: <password>
+
+If a backend is not configured, Arnold will not perform any provisioning actions.
+It is entirely useful like this, as it will instead only manage the Hiera datafiles.
+
 Limitations
 ============
 
-* It does not currently manage parameters or parameterized classes.
+* It does not currently manage parameterized classes.
 * Razor support is not yet included.
 
 Contact
@@ -56,7 +70,7 @@ License
 =======
 
 Copyright (c) 2013 Puppet Labs, info@puppetlabs.com  
-Copyright (c) 2013 FBL Financial, MikeDowning@fblfinancial.com
+Copyright (c) 2013 FBL Financial, puppet@fblfinancial.com
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
