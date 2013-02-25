@@ -1,16 +1,15 @@
 ---
-sslcert:   /etc/arnold/certs/server.crt
-sslkey:    /etc/arnold/certs/server.key
-datadir:   /etc/arnold/data
+:sslcert:   /etc/arnold/certs/server.crt
+:sslkey:    /etc/arnold/certs/server.key
+:datadir:   /etc/arnold/data
 
-user:      admin
-password:  admin
+:user:      admin
+:password:  admin
 
-daemonize: false
-port:      9090
-docroot:   /usr/local/share/arnold
+:daemonize: false
+:port:      9090
 
-classes:
+:classes:
   apache:      Manage the Apache webserver
   mysql:       Manage the MySQL database
   ntp::server: Install the NTP server

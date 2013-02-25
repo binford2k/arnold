@@ -1,5 +1,7 @@
 #! /usr/bin/env ruby
 
+# A quick 'n dirty example of a simple script to exercise Arnold's REST API
+
 require 'net/https'
 require 'rubygems'
 require 'json'
