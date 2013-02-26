@@ -13,7 +13,12 @@
 # grab the puppet ruby if system ruby doesn't exist.
 PATH=$PATH:/opt/puppet/bin
 
-PID=`ps ax | grep "ruby.*arnold.*serve$" | awk '{print $1}'`
+if [ -f "/var/run/arnold.pid" ]
+then
+  PID=`cat /var/run/arnold.pid`
+else
+  PID=`ps ax | grep "ruby.*arnold.*serve$" | awk '{print $1}'`
+fi
 
 success()
 {

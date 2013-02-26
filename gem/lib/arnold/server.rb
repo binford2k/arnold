@@ -15,6 +15,13 @@ module Arnold
     disable :raise_errors
     disable :show_exceptions
 
+    # Save our pidfile
+    begin
+      File.open('/var/run/arnold.pid', 'w') { |f| f.write(Process.pid) }
+    rescue
+      puts "Could not write PID file"
+    end
+
     def initialize
       super
       @manager = Arnold::NodeManager.new()
@@ -80,6 +87,14 @@ module Arnold
       return @error if request.path =~ /^\/api/
 
       erb :error
+    end
+
+    at_exit do
+      begin
+        File.delete('/var/run/arnold.pid')
+      rescue
+        #noop
+      end
     end
 
     helpers do
