@@ -8,12 +8,12 @@
 # This is a pretty cruddy init script.
 
 # source function library
-. /etc/rc.d/init.d/functions
+#. /etc/rc.d/init.d/functions
 
 # grab the puppet ruby if system ruby doesn't exist.
 PATH=$PATH:/opt/puppet/bin
 
-PID=`ps ax | grep "ruby.*arnold$" | awk '{print $1}'`
+PID=`ps ax | grep "ruby.*arnold.*serve$" | awk '{print $1}'`
 
 success()
 {
@@ -23,7 +23,7 @@ success()
 start()
 {
 	echo -n $"Starting arnold: "
-	/usr/local/bin/arnold
+	arnold serve
 	RETVAL=$?
 	success
 }
