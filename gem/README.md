@@ -3,36 +3,48 @@ Introduction
 
 ### Arnold: *the provisionator*
 
-This is the start of a Razor provisioning system.
+This is the start of a self service provisioning system.
 
-Currently, all it does is provide a web service that will read & write YAML files
-and a few functions to read them and apply classes to a node.
+It currently has these functions:
 
-Very soon, I plan to provide Razor functionality to spin up new instances after
-classifying them, and then it will be a simplistic self service provisioner.
+* Provide a REST-like API to manage Hiera YAML files with a certain structure
+* Provides a graphical web interface to manage Hiera YAML files
+* Provides a command line interface to manage (create, list) Hiera YAML files
+* Provides a few Puppet functions to read these files and:
+  * populate glabal variables (like facts or an ENC)
+  * apply classes to a node
+* Provides a pluggable backend for provisioning. Out of the box are:
+  * Null provisioner: does nothing when called
+  * Cloud Provisioner: calls out to Puppet's Cloud Provisioner to spin up, install, and classify new instances
+
+
+This was originally designed to provide a REST API for provisioning nodes with Razor. With the design of Razor
+being such that the only bit of information that's known before & after is the MAC address, Arnold creates a
+Hiera datasource hierarchy allowing classification via either the certname or the MAC address. Because Hiera
+is so dependent on filesystem paths, this is accomplished by creating symlinks named by the certname and the
+MAC address. This architecture is slightly clumsy, so it may not last.
 
 Configuration
 =============
 
 * Installing
-    * It's a Puppet module, yo! Copy the `arnold` subdirectory to your modulepath.
-    * Alternately, you can install by hand by running the little installer script.
+    * It's a Puppet module, yo! Install via `puppet module install binford2k-arnold` or copy the `binford2k-arnold` subdirectory to your modulepath and rename it to `arnold`.
 * Setup the server
   1. Classify your server with `arnold::provisionator` and apply.
   2. Configure by editing `/etc/arnold/config.yaml`
+      * The puppet module is simplistic and doesn't allow for editing this file, so you should currently modify the files in the module.
       * You will probably want to point the `datadir` to wherever you've configured Hiera to use.
       * You may configure Arnold to reuse Puppet certs if you wish.
       * If you choose to generate your own SSL certs, drop them in /etc/arnold/certs
           * `openssl genrsa -out server.key 1024`
           * `openssl req -new -key server.key -out server.csr`
           * `openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt`
+      * Classes described in `config.yaml` may be applied to nodes and will be listed in the GUI.
   3. Point a web browser at the configured port
       * Clicky clicky
       * List nodes, create nodes, modify nodes, etc
   4. Enable arnold for clients:
       * In `site.pp` on your master, outside of any node definitions, simply call the `arnold()` function.
-      * Alternately, you can classify your nodes with `arnold`
-        * If you place this class in your default group, it will automatically be applied to all nodes.
 
 Provisioner backend configuration
 =============
@@ -51,7 +63,6 @@ Limitations
 ============
 
 * It does not currently manage parameterized classes.
-* Razor support is not yet included.
 
 Contact
 =======
@@ -69,7 +80,7 @@ The development of this code was sponsored by FBL Financial.
 License
 =======
 
-Copyright (c) 2013 Puppet Labs, info@puppetlabs.com  
+Copyright (c) 2013 Puppet Labs, info@puppetlabs.com
 Copyright (c) 2013 FBL Financial, puppet@fblfinancial.com
 
 Permission is hereby granted, free of charge, to any person obtaining

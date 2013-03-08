@@ -1,5 +1,6 @@
 #! /usr/bin/env ruby
 
+require 'rubygems'
 require 'fileutils'
 require 'yaml'
 require 'optparse'
@@ -41,17 +42,18 @@ optparse = OptionParser.new { |opts|
 }
 optparse.parse!
 
-# Load default configuration data, deferring to command line overrides
+# Load configuration data, deferring to command line overrides
 configfile ||= '/etc/arnold/config.yaml'
 
 begin
   $CONFIG = YAML.load_file(configfile)
-  $CONFIG.merge!(cmdlineopts)
 rescue Errno::ENOENT => e
   puts "Config file doesn't exist; loading defaults! (#{e})" if cmdlineopts[:debug]
   $CONFIG={}
 end
+$CONFIG.merge!(cmdlineopts)
 
+# finally, apply defaults to any unset options
 $CONFIG[:docroot]    ||= File.dirname(__FILE__) + '/../' # well isn't this ugly
 $CONFIG[:backend]    ||= 'Null'
 $CONFIG[:datadir]    ||= '/etc/arnold/data'

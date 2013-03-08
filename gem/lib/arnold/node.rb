@@ -13,23 +13,23 @@ module Arnold
     end
 
     def guid=(g)
-      @guid = validate(g, :filename)
+      @guid = self.class.validate(g, :guid)
     end
 
     def name=(n)
-      @name = validate(n, :filename)
+      @name = self.class.validate(n, :filename)
     end
 
     def macaddr=(m)
-      @macaddr = validate(m, :macaddr)
+      @macaddr = self.class.validate(m, :macaddr)
     end
 
     def parameters=(p)
-      @parameters = validate(p, :params)
+      @parameters = self.class.validate(p, :params)
     end
 
     def classes=(c)
-      @classes = validate(c, :classes)
+      @classes = self.class.validate(c, :classes)
     end
 
     # returns classes and descriptions for classes enabled or disabled
@@ -45,7 +45,7 @@ module Arnold
 
     # Raise exceptions if the given condition fails
     #
-    def validate(value, type=:exists)
+    def self.validate(value, type=:exists)
       case type
       when :classes
         return if value.nil?
@@ -56,6 +56,10 @@ module Arnold
         return if value.nil?
         raise "Invalid type: #{value.class}" if not value.kind_of?(Hash)
         @@reserved_params.each { |n| raise "Invalid parameter: #{n}" if value.has_key?(n) }
+
+      when :guid
+        return if value.nil?
+        raise "Invalid GUID: #{value}" if not value =~ /^([a-z0-9]){16}$/
 
       when :macaddr
         return if value.nil?

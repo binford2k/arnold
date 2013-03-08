@@ -16,6 +16,7 @@ module Arnold
     disable :show_exceptions
 
     # Save our pidfile
+    # I don't know why webrick won't do it for us. Cheeky bastard.
     begin
       File.open('/var/run/arnold.pid', 'w') { |f| f.write(Process.pid) }
     rescue

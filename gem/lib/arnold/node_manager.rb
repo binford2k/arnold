@@ -16,20 +16,29 @@ module Arnold
     end
 
     def load(guid)
+      Node.validate(guid, :guid)
+
       begin
         data = YAML.load_file("#{@datadir}/#{guid}.yaml")
         return Arnold::Node.new(guid, data['name'], data['macaddr'], data['parameters'], data['classes'])
-      rescue Exception
-        puts "Invalid node! #{data.to_yaml}"
-        return Arnold::Node.new(guid)
+      rescue Exception => e
+        raise "Invalid node! #{e}"
       end
     end
 
     def loadall
       nodes=[]
+      errors = []
       Dir.glob("#{@datadir}/*.yaml").each do |file|
-        nodes << load(File.basename(file, '.yaml'))
+        begin
+          nodes << load(File.basename(file, '.yaml'))
+        rescue Exception => e
+          errors << e
+        end
       end
+
+      # splat out any errors loading nodes
+      errors.each { |e| puts e }
       nodes
     end
 
@@ -71,6 +80,13 @@ module Arnold
       return node.guid
     end
 
+    def remove(guid)
+      Node.validate(guid, :guid)
+      File.delete("#{@datadir}/#{guid}.yaml")
+      remove_stale_symlinks("#{@datadir}/macaddr/")
+      remove_stale_symlinks("#{@datadir}/name/")
+    end
+
     private
     def makedir(path)
       if not File.exist? "#{path}"
@@ -102,7 +118,7 @@ module Arnold
     def makeguid
       guid = nil
       5.times do
-        guid = (0..16).to_a.map{|a| rand(16).to_s(16)}.join
+        guid = (0..15).to_a.map{|a| rand(16).to_s(16)}.join
         break if not File.exist? "#{@datadir}/#{guid}.yaml"
         guid = nil
       end

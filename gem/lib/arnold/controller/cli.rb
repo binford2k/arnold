@@ -16,7 +16,7 @@ module Arnold
           exit 0
         when "new"
           args.shift
-          @data = {}
+          @data = { 'classes' => '' } # start out with an empty default so we don't barf if no classes are set.
           args.each do |arg|
             name, value = arg.split("=")
             @data[name] = value
@@ -31,6 +31,35 @@ module Arnold
             @manager.write(node)
 
             $CONFIG[:provisioner].provision(node)
+          rescue RuntimeError => e
+            puts "Whoops: #{e}"
+          rescue NoMethodError
+            usage
+          end
+        when "show"
+          begin
+            node = @manager.load(args[1])
+
+            # calculate the width of the parameters column
+            width = [node.parameters.keys.max_by(&:length).length() + 4, 11].max
+
+            puts "-----------------------------"
+            printf "%#{width}s: %s\n", 'GUID',        node.guid
+            printf "%#{width}s: %s\n", 'Node Name',   node.name
+            printf "%#{width}s: %s\n", 'MAC Address', node.macaddr
+            puts
+            puts "Parameters:"
+            node.parameters.each { |key, val| printf "%#{width}s: %s\n", key, val }
+            puts
+            puts "Classes:"
+            node.classes.each { |c| printf "%#{width}s\n", c }
+            puts
+          rescue RuntimeError => e
+            puts "Whoops: #{e}"
+          end
+        when "remove"
+          begin
+            @manager.remove(args[1])
           rescue RuntimeError => e
             puts "Whoops: #{e}"
           end
@@ -55,6 +84,7 @@ module Arnold
         puts "Usage:"
         puts "    * arnold help"
         puts "    * arnold list"
+        puts "    * arnold show <guid>"
         puts "    * arnold new [name=<name>] [macaddr=<macaddr>] [template=<template>] [group=<group>] [classes=<class1,class2,...>] [param1=value1]..."
         puts
         exit 1

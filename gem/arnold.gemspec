@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.name              = "arnold"
-  s.version           = '0.0.1'
-  s.date              = "2013-02-22"
+  s.version           = '0.0.2'
+  s.date              = "2013-03-07"
   s.summary           = "A simplistic self service provisioner and Puppet classifier."
   s.homepage          = "http://github.com/binford2k/arnold"
   s.email             = "binford2k@gmail.com"
