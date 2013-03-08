@@ -1,6 +1,6 @@
 name 'binford2k-arnold'
 version '0.0.2'
-description "This is the start of a self service provisioning system. It provides several ways manage Hiera data files and provides functions for classifying based on those data files. It can also call out to Cloud Provisioner if configured so."
+summary "This is the start of a self service provisioning system. It provides several ways manage Hiera data files and provides functions for classifying based on those data files. It can also call out to Cloud Provisioner if configured so."
 description "It currently has these functions:
 
 * Provide a REST-like API to manage Hiera YAML files with a certain structure
