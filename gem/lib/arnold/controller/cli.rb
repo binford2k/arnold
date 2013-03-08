@@ -85,6 +85,7 @@ module Arnold
         puts "    * arnold help"
         puts "    * arnold list"
         puts "    * arnold show <guid>"
+        puts "    * arnold remove <guid>"
         puts "    * arnold new [name=<name>] [macaddr=<macaddr>] [template=<template>] [group=<group>] [classes=<class1,class2,...>] [param1=value1]..."
         puts
         exit 1
