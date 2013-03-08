@@ -1,6 +1,6 @@
 <% if @nodes %>
   <table>
-    <tr class="header"><th>UUID</th><th>Node Name</th><th>MAC Address</th></tr>
+    <tr class="header"><th>GUID</th><th>Node Name</th><th>MAC Address</th></tr>
     <% even = true %>
     <% @nodes.each do |node| %>
       <tr class="<%= even ? "even":"odd" %>">
