@@ -56,8 +56,13 @@ module Arnold
 
     post '/update' do
       protected!
-      node = Arnold::Node.new(params[:guid], params[:name], params[:macaddr], parse_params(params), params[:classes])
-      @manager.write(node)
+      puts params.to_yaml
+      if(params[:delete])
+        @manager.remove(params[:guid])
+      else
+        node = Arnold::Node.new(params[:guid], params[:name], params[:macaddr], parse_params(params), params[:classes])
+        @manager.write(node)
+      end
       redirect '/'
     end
 
@@ -75,6 +80,11 @@ module Arnold
       protected!
       node = @manager.load(guid)
       node.to_json
+    end
+
+    get '/api/v1/remove/:guid' do |guid|
+      protected!
+      @manager.remove(guid)
     end
 
     not_found do

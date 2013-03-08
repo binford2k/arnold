@@ -1,5 +1,5 @@
 <% if @node %>
-  <form action="/update" method="post">
+  <form id="updateNode" action="/update" method="post">
     <% if @node.name then %><h2><%= @node.name %></h2><% end %>
     <% if @node.macaddr then %><h3><%= @node.macaddr %></h3><% end %>
     <input type="hidden" id="guid" name="guid" value="<%= @node.guid %>" />
@@ -36,7 +36,8 @@
         <% even = !even %>
       <% end %>
     </table>
-    <input type="submit" value="Update Node" />
+    <input id="deleteNode" type="submit" name="delete" value="Delete Node" />
+    <input id="updateNode" type="submit" name="update" value="Update Node" />
   </form>
 <% end %>
 
