@@ -32,6 +32,7 @@ Configuration
 * Setup the server
   1. Classify your server with `arnold::provisionator` and apply.
   2. Configure by editing `/etc/arnold/config.yaml`
+      * A sample configuration file is included as <a href="docs/config.yaml">`docs/config.yaml`</a>.
       * The puppet module is simplistic and doesn't allow for editing this file, so you should currently modify the files in the module.
       * You will probably want to point the `datadir` to wherever you've configured Hiera to use.
       * You may configure Arnold to reuse Puppet certs if you wish.
@@ -59,6 +60,45 @@ adding a stanza like this to your `config.yaml`
 If a backend is not configured, Arnold will not perform any provisioning actions.
 It is entirely useful like this, as it will instead only manage the Hiera datafiles.
 
+Usage
+=============
+
+Besides the web frontend, you can interact with Arnold via the command line and a REST-like API.
+
+### REST-like API
+
+Send a JSON formatted payload to Arnold's enpoints that looks like:
+
+    {
+      'macaddr'    => '00:0C:29:D1:03:A4',
+      'name'       => 'this.is.another.brand.new.system',
+      'parameters' => {
+                        'booga'   => 'wooga',
+                        'fiddle'  => 'faddle',
+                      },
+      'classes'    => [ 'test', 'mysql', 'ntp' ],
+    }
+
+The known endpoints are:
+
+* Create a node:
+  * `/api/v1/create`
+* Retrieve a node's configuration:
+  * `/api/v1/:guid`
+* Delete a node:
+  * `/api/v1/remove/:guid`
+
+Sample code is included as <a href="docs/postjson.rb">`docs/postjson.rb`</a>.
+
+### Command Line
+
+    Usage:
+        * arnold help
+        * arnold list
+        * arnold show <guid>
+        * arnold remove <guid>
+        * arnold new [name=<name>] [macaddr=<macaddr>] [template=<template>] [group=<group>] [classes=<class1,class2,...>] [param1=value1]...
+
 Limitations
 ============
 
@@ -80,7 +120,7 @@ The development of this code was sponsored by FBL Financial.
 License
 =======
 
-Copyright (c) 2013 Puppet Labs, info@puppetlabs.com
+Copyright (c) 2013 Puppet Labs, info@puppetlabs.com  
 Copyright (c) 2013 FBL Financial, puppet@fblfinancial.com
 
 Permission is hereby granted, free of charge, to any person obtaining
