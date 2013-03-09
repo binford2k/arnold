@@ -32,7 +32,7 @@ Configuration
 * Setup the server
   1. Classify your server with `arnold::provisionator` and apply.
   2. Configure by editing `/etc/arnold/config.yaml`
-      * A sample configuration file is included as <a href="docs/config.yaml">`docs/config.yaml`</a>.
+      * A sample configuration file is included as <a href="doc/config.yaml">`doc/config.yaml`</a>.
       * The puppet module is simplistic and doesn't allow for editing this file, so you should currently modify the files in the module.
       * You will probably want to point the `datadir` to wherever you've configured Hiera to use.
       * You may configure Arnold to reuse Puppet certs if you wish.
@@ -88,7 +88,7 @@ The known endpoints are:
 * Delete a node:
   * `/api/v1/remove/:guid`
 
-Sample code is included as <a href="docs/postjson.rb">`docs/postjson.rb`</a>.
+Sample code is included as <a href="doc/postjson.rb">`doc/postjson.rb`</a>.
 
 ### Command Line
 
