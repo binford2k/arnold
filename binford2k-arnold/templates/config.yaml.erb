@@ -1,0 +1,17 @@
+---
+:sslcert:   <%= @certfile %>
+:sslkey:    <%= @keyfile %>
+:datadir:   <%= @real_hieradata %>
+
+:user:      <%= @user %>
+:password:  <%= @password %>
+
+:daemonize: true
+:port:      <%= @port %>
+
+:classes:
+<% width = [@classes.keys.max_by(&:length).length(), 12].max unless @classes.empty? -%>
+<% @classes.each do |key, value| -%>
+  <%= sprintf("%-#{width}s", "#{key}:") %> <%= value %>
+<% end -%>
+

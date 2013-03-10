@@ -17,7 +17,6 @@ It currently has these functions:
   * Null provisioner: does nothing when called
   * Cloud Provisioner: calls out to Puppet's Cloud Provisioner to spin up, install, and classify new instances
 
-
 This was originally designed to provide a REST API for provisioning nodes with Razor. With the design of Razor
 being such that the only bit of information that's known before & after is the MAC address, Arnold creates a
 Hiera datasource hierarchy allowing classification via either the certname or the MAC address. Because Hiera
