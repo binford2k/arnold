@@ -80,6 +80,10 @@ adding a stanza like this to your `config.yaml`
     keyfile:      ~/.ssh/private_key.pem
     enc_password: <password>
 
+Provisioning backend will generally have their own configuration requirements. For example, the
+Cloud Provisioner requires your `~/.fog` file to be configured for your provisioning provider
+of choice.
+
 If a backend is not configured, Arnold will not perform any provisioning actions.
 It is entirely useful like this, as it will instead only manage the Hiera datafiles.
 
