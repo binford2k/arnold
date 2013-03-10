@@ -30,21 +30,45 @@ Configuration
     * It's a Puppet module, yo! Install via `puppet module install binford2k-arnold` or copy the `binford2k-arnold` subdirectory to your modulepath and rename it to `arnold`.
 * Setup the server
   1. Classify your server with `arnold::provisionator` and apply.
-  2. Configure by editing `/etc/arnold/config.yaml`
+  2. Configure by passing parameters to the `arnold::provisionator` class:
+      * `reusecerts`
+        * If this is true, Arnold will use the Puppet Master's certs, otherwise self signed certificates will be generated.
+        * Default value: `true`
+      * `template`
+        * Allows the caller to specify an alternate template file.
+        * Default value: `arnold/config.yaml.erb`
+      * `hieradata`
+        * Allows the caller to specify where Puppet's Hieradata is.
+        * Default value: `/etc/<puppetroot>/hieradata`
+      * `user`
+        * The administrative user for managing Arnold.
+        * Default value: `admin`
+      * `password`
+        * The password for the admin user.
+        * Default value: `admin`
+      * `port`
+        * The port Arnold should listen on.
+        * Default value: `9090`
+      * `classes`
+        * A hash of classes and descriptions that should be available for use. See the <a href="tests/provisionator.pp">`tests/provisionator.pp`</a> file for an example.
+        * Default value: `{}`
+      * `customconfig`
+        * If this is true, then the module will not manage the config file.
+        * Default value: `false`
+  3. (Optional) manual configuration
       * A sample configuration file is included as <a href="doc/config.yaml">`doc/config.yaml`</a>.
-      * The puppet module is simplistic and doesn't allow for editing this file, so you should currently modify the files in the module.
-      * You will probably want to point the `datadir` to wherever you've configured Hiera to use.
-      * You may configure Arnold to reuse Puppet certs if you wish.
-      * If you choose to generate your own SSL certs, drop them in /etc/arnold/certs
+      * You will probably want to point the `datadir` to wherever you've configured Hiera to use as `datadir`.
+      * If you choose to generate your own SSL certs, drop them in /etc/arnold/certs and they will not be overwritten.
           * `openssl genrsa -out server.key 1024`
           * `openssl req -new -key server.key -out server.csr`
           * `openssl x509 -req -days 365 -in server.csr -signkey server.key -out server.crt`
-      * Classes described in `config.yaml` may be applied to nodes and will be listed in the GUI.
+      * Classes described in `config.yaml` may be applied to nodes and will be listed in the GUI. See the sample.
   3. Point a web browser at the configured port
       * Clicky clicky
       * List nodes, create nodes, modify nodes, etc
   4. Enable arnold for clients:
       * In `site.pp` on your master, outside of any node definitions, simply call the `arnold()` function.
+      * This will classify the node with any classes defined for that node and create global variables for each parameter listed.
 
 Provisioner backend configuration
 =============
@@ -66,7 +90,7 @@ Besides the web frontend, you can interact with Arnold via the command line and 
 
 ### REST-like API
 
-Send a JSON formatted payload to Arnold's enpoints that looks like:
+Send a JSON formatted payload to Arnold's endpoints that looks like:
 
     {
       'macaddr'    => '00:0C:29:D1:03:A4',
