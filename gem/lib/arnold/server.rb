@@ -50,7 +50,10 @@ module Arnold
       protected!
       node = Arnold::Node.new(nil, params[:name], params[:macaddr], parse_params(params), params[:classes])
       @manager.write(node)
-      $CONFIG[:provisioner].provision(node)
+      pid = fork do
+        $CONFIG[:provisioner].provision(node)
+      end
+      Process.detach(pid)
       redirect '/'
     end
 
@@ -72,7 +75,10 @@ module Arnold
       data = JSON.parse request.body.read
       node = Arnold::Node.new(nil, data['name'], data['macaddr'], data['parameters'], data['classes'])
       guid = @manager.write(node)
-      $CONFIG[:provisioner].provision(node)
+      pid = fork do
+        $CONFIG[:provisioner].provision(node)
+      end
+      Process.detach(pid)
       return guid
     end
 
