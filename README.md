@@ -32,29 +32,29 @@ Configuration
   1. Classify your server with `arnold::provisionator` and apply.
   2. Configure by passing parameters to the `arnold::provisionator` class:
       * `reusecerts`
-        * If this is true, Arnold will use the Puppet Master's certs, otherwise self signed certificates will be generated.
-        * Default value: `true`
+          * If this is true, Arnold will use the Puppet Master's certs, otherwise self signed certificates will be generated.
+          * Default value: `true`
       * `template`
-        * Allows the caller to specify an alternate template file.
-        * Default value: `arnold/config.yaml.erb`
+          * Allows the caller to specify an alternate template file.
+          * Default value: `arnold/config.yaml.erb`
       * `hieradata`
-        * Allows the caller to specify where Puppet's Hieradata is.
-        * Default value: `/etc/<puppetroot>/hieradata`
+          * Allows the caller to specify where Puppet's Hieradata is.
+          * Default value: `/etc/<puppetroot>/hieradata`
       * `user`
-        * The administrative user for managing Arnold.
-        * Default value: `admin`
+          * The administrative user for managing Arnold.
+          * Default value: `admin`
       * `password`
-        * The password for the admin user.
-        * Default value: `admin`
+          * The password for the admin user.
+          * Default value: `admin`
       * `port`
-        * The port Arnold should listen on.
-        * Default value: `9090`
+          * The port Arnold should listen on.
+          * Default value: `9090`
       * `classes`
-        * A hash of classes and descriptions that should be available for use. See the <a href="tests/provisionator.pp">`tests/provisionator.pp`</a> file for an example.
-        * Default value: `{}`
+          * A hash of classes and descriptions that should be available for use. See the <a href="tests/provisionator.pp">`tests/provisionator.pp`</a> file for an example.
+          * Default value: `{}`
       * `customconfig`
-        * If this is true, then the module will not manage the config file.
-        * Default value: `false`
+          * If this is true, then the module will not manage the config file.
+          * Default value: `false`
   3. (Optional) manual configuration
       * A sample configuration file is included as <a href="doc/config.yaml">`doc/config.yaml`</a>.
       * You will probably want to point the `datadir` to wherever you've configured Hiera to use as `datadir`.
